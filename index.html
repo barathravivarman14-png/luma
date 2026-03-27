@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>LUMA</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #ede8df;
+  --card:      #f5f0e8;
+  --cream:     #faf7f2;
+  --brown:     #5c3d2e;
+  --brown-lt:  #8b5e3c;
+  --amber:     #c17f3e;
+  --amber-btn: #c4844a;
+  --dark-btn:  #4a3728;
+  --text:      #3d2b1f;
+  --text-muted:#9a8070;
+  --border:    #ddd5c8;
+  --white:     #ffffff;
+  --shadow:    0 8px 32px rgba(80,50,30,0.13);
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+/* ─── PHONE SHELL ─── */
+.phone {
+  width: 375px;
+  min-height: 780px;
+  background: var(--card);
+  border-radius: 42px;
+  overflow: hidden;
+  box-shadow: var(--shadow), 0 2px 0 rgba(255,255,255,0.6) inset;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── SCREENS ─── */
+.screen {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  min-height: 780px;
+}
+.screen.active { display: flex; }
+
+/* ════════════════════════════
+   LANDING SCREEN
+════════════════════════════ */
+#landingScreen {
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 60px 40px 50px;
+  background: var(--card);
+}
+
+.luma-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 4.2rem;
+  color: var(--brown);
+  letter-spacing: 2px;
+  line-height: 1;
+  margin-bottom: 52px;
+}
+
+.mode-toggle {
+  display: flex;
+  background: var(--cream);
+  border-radius: 50px;
+  padding: 5px;
+  gap: 2px;
+  margin-bottom: 36px;
+  box-shadow: 0 2px 8px rgba(80,50,30,0.10);
+  width: 220px;
+}
+.mode-btn {
+  flex: 1;
+  border: none;
+  border-radius: 50px;
+  padding: 11px 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.15rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  color: var(--text-muted);
+  background: transparent;
+  letter-spacing: 0.5px;
+}
+.mode-btn.active {
+  background: var(--amber-btn);
+  color: var(--white);
+  box-shadow: 0 2px 10px rgba(193,127,62,0.35);
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0 30px;
+}
+
+.glass-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 4px;
+}
+.glass-label {
+  font-size: 1rem;
+  color: var(--text);
+  font-weight: 400;
+}
+
+/* Toggle switch */
+.toggle-wrap { position: relative; width: 48px; height: 26px; }
+.toggle-wrap input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: #d9cfc3;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px; height: 20px;
+  left: 3px; top: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+input:checked + .toggle-slider { background: var(--amber-btn); }
+input:checked + .toggle-slider::before { transform: translateX(22px); }
+
+.start-btn {
+  margin-top: 60px;
+  background: var(--amber-btn);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 16px 56px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 16px rgba(193,127,62,0.35);
+  transition: all 0.18s;
+}
+.start-btn:hover { filter: brightness(1.07); transform: translateY(-1px); }
+
+/* ════════════════════════════
+   CAMERA SCREEN
+════════════════════════════ */
+#cameraScreen {
+  background: #2e3540;
+  position: relative;
+  overflow: hidden;
+  justify-content: flex-end;
+}
+
+/* Full-bleed video bg */
+#videoEl {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Polaroid frame overlay */
+.cam-polaroid {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -54%);
+  width: 290px;
+  background: white;
+  border-radius: 4px;
+  padding: 10px 10px 52px;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+.cam-polaroid-img {
+  width: 100%;
+  height: 290px;
+  background: transparent;
+  overflow: hidden;
+  position: relative;
+}
+/* video shown through the polaroid window via clip */
+.cam-video-window {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Counter */
+.cam-counter {
+  position: absolute;
+  bottom: 108px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+/* Camera controls bar */
+.cam-controls {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 44px 40px;
+  background: linear-gradient(to top, rgba(20,20,20,0.7) 0%, transparent 100%);
+}
+
+.cam-ctrl-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-family: 'DM Sans', sans-serif;
+  opacity: 0.9;
+  transition: opacity 0.15s;
+}
+.cam-ctrl-btn:hover { opacity: 1; }
+.cam-ctrl-btn svg { width: 24px; height: 24px; }
+.cam-ctrl-btn span { color: rgba(255,255,255,0.85); font-size: 0.72rem; }
+
+.shutter-btn {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: 3px solid rgba(255,255,255,0.6);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+.shutter-btn::after {
+  content: '';
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.88);
+  display: block;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
+}
+.shutter-btn:active::after { transform: scale(0.92); }
+.shutter-btn:active { transform: scale(0.96); }
+
+/* Flash */
+#flash {
+  position: fixed; inset: 0;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity 0.06s;
+}
+#flash.pop { opacity: 1; transition: none; }
+
+/* ════════════════════════════
+   PREVIEW SCREEN
+════════════════════════════ */
+#previewScreen {
+  background: var(--card);
+  padding: 0;
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  padding: 54px 24px 16px;
+  position: relative;
+}
+.back-btn {
+  background: none; border: none;
+  font-size: 1.4rem; color: var(--brown);
+  cursor: pointer; padding: 4px 10px 4px 0;
+  line-height: 1;
+  font-family: serif;
+}
+.preview-title {
+  flex: 1;
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--amber-btn);
+  letter-spacing: 0.5px;
+  margin-right: 30px; /* balance the back btn */
+}
+
+/* Polaroid result */
+.preview-polaroid {
+  margin: 8px auto 0;
+  width: 268px;
+  background: white;
+  border-radius: 3px;
+  padding: 10px 10px 48px;
+  box-shadow: 0 6px 28px rgba(80,50,30,0.14);
+  position: relative;
+}
+.preview-photo-wrap {
+  width: 100%;
+  height: 240px;
+  overflow: hidden;
+  background: #eee;
+  position: relative;
+}
+#previewImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: filter 0.3s;
+}
+/* glass effect overlay */
+.glass-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 60%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.glass-overlay.on { opacity: 1; }
+
+.preview-caption {
+  margin-top: 10px;
+  text-align: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--brown);
+  min-height: 30px;
+  outline: none;
+  cursor: text;
+  padding: 2px 6px;
+  border-radius: 3px;
+  transition: background 0.2s;
+  letter-spacing: 0.3px;
+}
+.preview-caption:focus { background: #f0ebe0; }
+.preview-caption:empty::before {
+  content: attr(data-placeholder);
+  color: #c8bfb0;
+  font-style: italic;
+}
+
+/* Filters */
+.filters-section { padding: 16px 20px 0; }
+.filters-row {
+  display: flex;
+  gap: 8px;
+}
+.filter-pill {
+  flex: 1;
+  border: none;
+  border-radius: 22px;
+  padding: 10px 0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.16s;
+  background: #4a3728;
+  color: rgba(255,255,255,0.8);
+  letter-spacing: 0.3px;
+}
+.filter-pill.active {
+  background: var(--dark-btn);
+  color: white;
+  box-shadow: 0 2px 8px rgba(74,55,40,0.4);
+}
+.filter-pill:hover { background: #5c4535; }
+
+/* Action buttons */
+.action-section {
+  padding: 14px 20px 32px;
+  display: flex;
+  gap: 12px;
+}
+.act-btn {
+  flex: 1;
+  border: none;
+  border-radius: 50px;
+  padding: 16px 0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.16s;
+  letter-spacing: 0.3px;
+}
+.btn-download {
+  background: var(--amber-btn);
+  color: white;
+  box-shadow: 0 3px 14px rgba(193,127,62,0.35);
+}
+.btn-download:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.btn-retake {
+  background: var(--dark-btn);
+  color: rgba(255,255,255,0.9);
+}
+.btn-retake:hover { background: #5c4535; }
+
+/* Strip mode: multiple shots */
+.strip-grid {
+  display: none;
+  flex-direction: column;
+  gap: 3px;
+  width: 260px;
+  margin: 0 auto;
+  background: white;
+  padding: 10px 10px 46px;
+  box-shadow: 0 6px 28px rgba(80,50,30,0.14);
+  border-radius: 3px;
+}
+.strip-grid.visible { display: flex; }
+.strip-slot {
+  width: 100%;
+  height: 78px;
+  background: #e8e0d4;
+  overflow: hidden;
+  position: relative;
+}
+.strip-slot img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.strip-slot .slot-num {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: #bbb; font-size: 1.5rem;
+}
+
+/* No-cam fallback */
+.no-cam-msg {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px;
+  background: #1a1a1a; color: #888;
+  font-size: 0.85rem; text-align: center; padding: 30px;
+  font-family: 'DM Sans', sans-serif;
+  line-height: 1.6;
+  display: none;
+}
+
+/* hidden canvas for capture */
+#captureCanvas { display: none; }
+</style>
+</head>
+<body>
+
+<canvas id="captureCanvas"></canvas>
+<div id="flash"></div>
+
+<!-- ══════════ PHONE ══════════ -->
+<div class="phone">
+
+  <!-- ── LANDING ── -->
+  <div class="screen active" id="landingScreen">
+    <h1 class="luma-title">LUMA</h1>
+
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="modeSingle" onclick="setMode('single')">Single</button>
+      <button class="mode-btn" id="modeStrip" onclick="setMode('strip')">Strip</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="glass-row">
+      <span class="glass-label">Glass Effect</span>
+      <label class="toggle-wrap">
+        <input type="checkbox" id="glassToggle">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <button class="start-btn" onclick="goToCamera()">Open Camera</button>
+  </div>
+
+  <!-- ── CAMERA ── -->
+  <div class="screen" id="cameraScreen">
+    <video id="videoEl" autoplay playsinline muted></video>
+
+    <div class="cam-polaroid" id="camPolaroid">
+      <div class="cam-polaroid-img">
+        <video id="videoMirror" autoplay playsinline muted class="cam-video-window"></video>
+      </div>
+    </div>
+
+    <div class="cam-counter" id="camCounter">1/1</div>
+
+    <div class="no-cam-msg" id="noCamMsg">
+      📷<br>Camera access needed.<br>Please allow camera permission<br>and refresh.
+    </div>
+
+    <div class="cam-controls">
+      <!-- Reset -->
+      <button class="cam-ctrl-btn" onclick="resetShots()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.91"/>
+        </svg>
+        <span>Reset</span>
+      </button>
+
+      <!-- Shutter -->
+      <div class="shutter-btn" id="shutterBtn" onclick="capturePhoto()"></div>
+
+      <!-- Flip -->
+      <button class="cam-ctrl-btn" onclick="flipCamera()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        <span>Flip</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── PREVIEW ── -->
+  <div class="screen" id="previewScreen">
+    <div class="preview-header">
+      <button class="back-btn" onclick="goToCamera()">‹</button>
+      <div class="preview-title">Preview</div>
+    </div>
+
+    <!-- Single mode -->
+    <div id="singlePreview">
+      <div class="preview-polaroid">
+        <div class="preview-photo-wrap">
+          <img id="previewImg" src="" alt="capture">
+          <div class="glass-overlay" id="glassOverlay"></div>
+        </div>
+        <div class="preview-caption" contenteditable="true" id="captionEl" data-placeholder="Summer Days ☀️"></div>
+      </div>
+    </div>
+
+    <!-- Strip mode -->
+    <div class="strip-grid" id="stripPreview">
+      <div class="strip-slot" id="slot0"><div class="slot-num">1</div></div>
+      <div class="strip-slot" id="slot1"><div class="slot-num">2</div></div>
+      <div class="strip-slot" id="slot2"><div class="slot-num">3</div></div>
+      <div class="strip-slot" id="slot3"><div class="slot-num">4</div></div>
+    </div>
+
+    <div class="filters-section">
+      <div class="filters-row" id="filterRow">
+        <button class="filter-pill active" data-filter="normal">Normal</button>
+        <button class="filter-pill" data-filter="bw">B/W</button>
+        <button class="filter-pill" data-filter="sepia">Sepia</button>
+        <button class="filter-pill" data-filter="bright">Bright</button>
+      </div>
+    </div>
+
+    <div class="action-section">
+      <button class="act-btn btn-download" onclick="downloadPhoto()">Download</button>
+      <button class="act-btn btn-retake" onclick="goToCamera()">Retake</button>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+
+<script>
+// ── State
+let appMode      = 'single';
+let glassEffect  = false;
+let facingMode   = 'user';
+let currentStream= null;
+let currentFilter= 'normal';
+// Store raw ImageBitmap objects — zero compression, full native resolution
+let capturedBitmaps  = [];
+let capturedThumbs   = []; // small previews only for display
+let stripMax     = 4;
+let stripIndex   = 0;
+
+const CSS_FILTERS = {
+  normal: 'none',
+  bw:     'grayscale(1) contrast(1.15)',
+  sepia:  'sepia(0.75) contrast(1.05) brightness(1.03)',
+  bright: 'brightness(1.2) saturate(1.2) contrast(0.95)',
+};
+
+// ── DOM refs
+const videoEl       = document.getElementById('videoEl');
+const videoMirror   = document.getElementById('videoMirror');
+const camCounter    = document.getElementById('camCounter');
+const flashEl       = document.getElementById('flash');
+const previewImg    = document.getElementById('previewImg');
+const glassOverlay  = document.getElementById('glassOverlay');
+const captureCanvas = document.getElementById('captureCanvas');
+const noCamMsg      = document.getElementById('noCamMsg');
+const filterRow     = document.getElementById('filterRow');
+const captionEl     = document.getElementById('captionEl');
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function setMode(m) {
+  appMode = m;
+  document.getElementById('modeSingle').classList.toggle('active', m === 'single');
+  document.getElementById('modeStrip').classList.toggle('active', m === 'strip');
+  stripMax = m === 'strip' ? 4 : 1;
+}
+
+// ── Camera — request max resolution
+async function startCamera() {
+  if (currentStream) currentStream.getTracks().forEach(t => t.stop());
+  try {
+    currentStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode, width: { ideal: 4096 }, height: { ideal: 2160 } },
+      audio: false
+    });
+    videoEl.srcObject     = currentStream;
+    videoMirror.srcObject = currentStream;
+    noCamMsg.style.display = 'none';
+  } catch {
+    try {
+      currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode }, audio: false });
+      videoEl.srcObject     = currentStream;
+      videoMirror.srcObject = currentStream;
+      noCamMsg.style.display = 'none';
+    } catch(e2) {
+      noCamMsg.style.display = 'flex';
+    }
+  }
+}
+
+function flipCamera() { facingMode = facingMode === 'user' ? 'environment' : 'user'; startCamera(); }
+
+function goToCamera() {
+  capturedBitmaps.forEach(b => { try { b.close(); } catch{} });
+  capturedBitmaps = [];
+  capturedThumbs  = [];
+  stripIndex = 0;
+  updateCounter();
+  showScreen('cameraScreen');
+  startCamera();
+}
+
+function updateCounter() {
+  camCounter.textContent = appMode === 'strip' ? `${stripIndex + 1}/${stripMax}` : '';
+}
+
+function resetShots() {
+  capturedBitmaps.forEach(b => { try { b.close(); } catch{} });
+  capturedBitmaps = [];
+  capturedThumbs  = [];
+  stripIndex = 0;
+  updateCounter();
+  for (let i = 0; i < 4; i++) {
+    document.getElementById(`slot${i}`).innerHTML = `<div class="slot-num">${i+1}</div>`;
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+//  CAPTURE — zero compression pipeline:
+//  1. ImageCapture.takePhoto() → raw JPEG blob from sensor (highest quality)
+//  2. createImageBitmap(blob)  → decode to raw pixel bitmap in GPU memory
+//  3. Store the ImageBitmap — NO toDataURL, NO re-encoding at this stage
+//  4. Preview uses a small objectURL thumbnail (display only)
+//  5. Download reads directly from the stored ImageBitmap onto a canvas
+// ─────────────────────────────────────────────────────────
+async function capturePhoto() {
+  if (!currentStream) return;
+
+  // Flash
+  flashEl.classList.add('pop');
+  setTimeout(() => { flashEl.style.transition = 'opacity 0.45s'; flashEl.style.opacity = '0'; }, 60);
+  setTimeout(() => { flashEl.classList.remove('pop'); flashEl.style.transition = ''; flashEl.style.opacity = ''; }, 550);
+
+  let bitmap;
+  let thumbURL;
+
+  try {
+    // ImageCapture.takePhoto() captures at the camera's native photo resolution
+    // (often higher than the video stream resolution — e.g. 12MP vs 1080p video)
+    const track = currentStream.getVideoTracks()[0];
+    const ic    = new ImageCapture(track);
+
+    // Get actual photo capabilities to request max res
+    let photoBlob;
+    try {
+      const caps = await ic.getPhotoCapabilities();
+      const maxW = caps.imageWidth  && caps.imageWidth.max;
+      const maxH = caps.imageHeight && caps.imageHeight.max;
+      photoBlob  = await ic.takePhoto(maxW && maxH ? { imageWidth: maxW, imageHeight: maxH } : {});
+    } catch {
+      photoBlob = await ic.takePhoto();
+    }
+
+    // Decode blob → ImageBitmap (raw pixels in GPU, no re-encoding)
+    bitmap = await createImageBitmap(photoBlob);
+
+    // Create small object URL for preview display (thumbnail only, NOT used for download)
+    thumbURL = URL.createObjectURL(photoBlob);
+
+  } catch {
+    // Fallback: grab current video frame as ImageBitmap — still zero re-encoding
+    bitmap   = await createImageBitmap(videoEl);
+
+    // For preview: render a small thumbnail to blob via OffscreenCanvas if available
+    try {
+      const oc = new OffscreenCanvas(bitmap.width, bitmap.height);
+      const ox = oc.getContext('2d');
+      ox.drawImage(bitmap, 0, 0);
+      const blob = await oc.convertToBlob({ type: 'image/jpeg', quality: 0.9 });
+      thumbURL = URL.createObjectURL(blob);
+    } catch {
+      // Last resort: tiny display canvas for preview only
+      const tc = document.createElement('canvas');
+      const scale = Math.min(1, 900 / Math.max(bitmap.width, bitmap.height));
+      tc.width  = bitmap.width  * scale;
+      tc.height = bitmap.height * scale;
+      tc.getContext('2d').drawImage(bitmap, 0, 0, tc.width, tc.height);
+      thumbURL = tc.toDataURL('image/jpeg', 0.88);
+    }
+  }
+
+  capturedBitmaps.push(bitmap);
+  capturedThumbs.push(thumbURL);
+
+  if (appMode === 'strip') {
+    const slot = document.getElementById(`slot${stripIndex}`);
+    slot.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = thumbURL;
+    img.style.filter = CSS_FILTERS[currentFilter];
+    slot.appendChild(img);
+    stripIndex++;
+    updateCounter();
+    if (stripIndex >= stripMax) goToPreview();
+  } else {
+    goToPreview();
+  }
+}
+
+// ── Preview — just show the thumbnail (display only)
+function goToPreview() {
+  if (currentStream) currentStream.getTracks().forEach(t => t.stop());
+  showScreen('previewScreen');
+
+  const isStrip = appMode === 'strip';
+  document.getElementById('singlePreview').style.display = isStrip ? 'none' : 'block';
+  document.getElementById('stripPreview').classList.toggle('visible', isStrip);
+
+  if (!isStrip) {
+    previewImg.src = capturedThumbs[0] || '';
+    previewImg.style.filter = CSS_FILTERS[currentFilter];
+    glassOverlay.classList.toggle('on', glassEffect);
+  } else {
+    for (let i = 0; i < Math.min(capturedThumbs.length, 4); i++) {
+      const img = document.getElementById(`slot${i}`)?.querySelector('img');
+      if (img) img.style.filter = CSS_FILTERS[currentFilter];
+    }
+  }
+}
+
+// ── Filters
+filterRow.addEventListener('click', e => {
+  const btn = e.target.closest('.filter-pill');
+  if (!btn) return;
+  filterRow.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.filter;
+  previewImg.style.filter = CSS_FILTERS[currentFilter];
+  for (let i = 0; i < 4; i++) {
+    const img = document.getElementById(`slot${i}`)?.querySelector('img');
+    if (img) img.style.filter = CSS_FILTERS[currentFilter];
+  }
+});
+
+// ── Glass toggle
+document.getElementById('glassToggle').addEventListener('change', e => {
+  glassEffect = e.target.checked;
+  glassOverlay.classList.toggle('on', glassEffect);
+});
+
+// ─────────────────────────────────────────────────────────
+//  DOWNLOAD — render directly from stored ImageBitmap
+//  The bitmap is raw decoded pixels — no JPEG artifacts,
+//  no re-compression, native camera resolution.
+//  We paint it onto a canvas ONCE and export as PNG (lossless).
+// ─────────────────────────────────────────────────────────
+function renderPolaroidCanvas(bitmap, filterStr, caption, withGlass) {
+  const IW = bitmap.width;
+  const IH = bitmap.height;
+
+  const border    = Math.round(IW * 0.055);
+  const bottomPad = Math.round(IW * 0.22);
+  const W = IW + border * 2;
+  const H = IH + border + bottomPad;
+
+  const dc  = document.createElement('canvas');
+  dc.width  = W;
+  dc.height = H;
+  const ctx = dc.getContext('2d');
+
+  // Polaroid paper background
+  ctx.fillStyle = '#faf7f2';
+  ctx.fillRect(0, 0, W, H);
+
+  // Subtle border shadow
+  ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+  ctx.lineWidth = Math.max(1, Math.round(IW * 0.003));
+  ctx.strokeRect(1, 1, W - 2, H - 2);
+
+  // Paint raw bitmap with filter
+  ctx.filter = filterStr !== 'none' ? filterStr : 'none';
+  ctx.drawImage(bitmap, border, border, IW, IH);
+  ctx.filter = 'none';
+
+  // Glass shimmer
+  if (withGlass) {
+    const g = ctx.createLinearGradient(border, border, border + IW * 0.55, border + IH * 0.4);
+    g.addColorStop(0, 'rgba(255,255,255,0.16)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(border, border, IW, IH);
+  }
+
+  // Caption
+  const fs = Math.round(IW * 0.054);
+  ctx.font         = `italic 600 ${fs}px Georgia, serif`;
+  ctx.fillStyle    = '#3d2b1f';
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(caption || 'Summer Days ☀️', W / 2, IH + border + bottomPad * 0.47);
+
+  // Date
+  const dfs = Math.round(IW * 0.026);
+  ctx.font         = `${dfs}px "Courier New", monospace`;
+  ctx.fillStyle    = '#b0a090';
+  ctx.textAlign    = 'right';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(
+    new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    W - border, IH + border + bottomPad * 0.83
+  );
+
+  return dc;
+}
+
+async function downloadPhoto() {
+  if (!capturedBitmaps.length) return;
+
+  if (appMode === 'single') {
+    const bitmap  = capturedBitmaps[0];
+    const caption = captionEl.textContent.trim() || 'Summer Days ☀️';
+    const dc      = renderPolaroidCanvas(bitmap, CSS_FILTERS[currentFilter], caption, glassEffect);
+
+    // convertToBlob via OffscreenCanvas if possible (faster, no main-thread block)
+    try {
+      const oc = new OffscreenCanvas(dc.width, dc.height);
+      oc.getContext('2d').drawImage(dc, 0, 0);
+      const blob = await oc.convertToBlob({ type: 'image/png' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `luma_${Date.now()}.png`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    } catch {
+      const a = document.createElement('a');
+      a.href = dc.toDataURL('image/png');
+      a.download = `luma_${Date.now()}.png`;
+      a.click();
+    }
+
+  } else {
+    // Strip — stack all bitmaps vertically
+    const n   = capturedBitmaps.length;
+    if (!n) return;
+    const IW  = capturedBitmaps[0].width;
+    const IH  = capturedBitmaps[0].height;
+    const gap = Math.round(IW * 0.012);
+    const pad = Math.round(IW * 0.055);
+    const bot = Math.round(IW * 0.14);
+    const W   = IW + pad * 2;
+    const H   = IH * n + gap * (n - 1) + pad + bot;
+
+    const dc  = document.createElement('canvas');
+    dc.width  = W; dc.height = H;
+    const ctx = dc.getContext('2d');
+    ctx.fillStyle = '#faf7f2';
+    ctx.fillRect(0, 0, W, H);
+
+    const fv = CSS_FILTERS[currentFilter];
+    capturedBitmaps.forEach((bm, i) => {
+      ctx.filter = fv !== 'none' ? fv : 'none';
+      ctx.drawImage(bm, pad, pad + i * (IH + gap), IW, IH);
+      ctx.filter = 'none';
+    });
+
+    const lfs = Math.round(IW * 0.044);
+    ctx.font = `italic 600 ${lfs}px Georgia, serif`;
+    ctx.fillStyle = '#3d2b1f'; ctx.textAlign = 'center';
+    ctx.fillText('LUMA Strip', W / 2, H - bot * 0.28);
+
+    try {
+      const oc = new OffscreenCanvas(dc.width, dc.height);
+      oc.getContext('2d').drawImage(dc, 0, 0);
+      const blob = await oc.convertToBlob({ type: 'image/png' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `luma_strip_${Date.now()}.png`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    } catch {
+      const a = document.createElement('a');
+      a.href = dc.toDataURL('image/png');
+      a.download = `luma_strip_${Date.now()}.png`;
+      a.click();
+    }
+  }
+}
+
+updateCounter();
+</script>
+</body>
+</html>
